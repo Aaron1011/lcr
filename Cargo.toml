@@ -1,0 +1,8 @@
+[package]
+name = "lcr"
+version = "0.1.0"
+authors = ["Aaron Hill <aa1ronham@gmail.com>"]
+
+[dependencies]
+nalgebra = "0.13"
+num-traits = "0.1"

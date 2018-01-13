@@ -1,34 +1,25 @@
 import sys
 import math
 from collections import namedtuple
+import time
+import numpy
 
 Player = namedtuple('Person', ['num'])
 
 def create_states(players):
     states = []
     chips = 3 * len(players)
-    players_permut = powerset(players)
-    players_permut.remove([])
+    #players_permut = powerset(players)
+    #players_permut.remove([])
 
     # As chips get placed in the center, the number of chips
     # in play decreases from '3 * players' to '1
     for num_chips in range(1, chips + 1):
-        # Determine how many ways a number of chips
-        # can be distributed among the players. Players
-        # can have 0 chips without being out of the game,
-        # so we need to count all of the ways the chips
-        # can be distributed when anywhere from '0' to 'p - 1'
-        # players don't have any chips (there's always at least
-        # one player with chips)
-        for combination in players_permut:
-            permutes = permute_chips(combination, num_chips)
+        permutes = permute_chips(players, num_chips)
+        for turn in players:
             for permute in permutes:
-                for player in players:
-                    if not player in permute:
-                        permute[player] = 0
+                states.append((turn, permute))
 
-            for turn in map(lambda p: p.num, players):
-                states.append((turn, permutes))
     return states
 
 
@@ -39,23 +30,48 @@ def create_states(players):
 #         assignment
 def permute_chips(players, chips):
     final = []
-    player = next(iter(players))
+    player = players[0]
 
     if len(players) == 1:
-        final.append({player: chips})
+        final.append([(player, chips)])
         return final
 
     for num_chips in range(chips + 1):
-        other_players = set(players)
-        other_players.remove(player)
+        #other_players = set(players)
+        #other_players.remove(player)
+        #other_players = iter(players)
+        #next(other_players)
 
-        other_permuts = permute_chips(other_players, chips - num_chips)
+        other_permuts = permute_chips(players[1:], chips - num_chips)
         for permut in other_permuts:
-            permut[player] = num_chips
-            final.append(dict(permut))
+            permut.append((player, num_chips))
+            final.append(list(permut))
 
     return final
-    
+   
+
+def permute_chips_numpy(players, chips):
+    final = None
+    player = players[0]
+
+    if len(players) == 1:
+        #final.append([(player, chips)])
+        return numpy.array([[[player, chips]]])
+
+    for num_chips in range(chips + 1):
+        other_permuts = permute_chips_numpy(numpy.delete(players, 0), chips - num_chips)
+
+        #other_permuts = permute_chips(other_players, chips - num_chips)
+        for permut in other_permuts:
+            permut = numpy.append(permut, [[player, num_chips]], axis=0)
+            if final is None:
+                final = numpy.array([permut])
+            else:
+                final = numpy.append(final, [permut], axis=0)
+
+    return final
+
+
 
 def powerset(s):
     result = [[]]
@@ -80,24 +96,40 @@ def stirling(n, k):
 
     return (1.0 / math.factorial(k)) * total
 
+def time_fn(fn, *args, **kwargs):
+    before = time.time()
+    result = fn(*args, **kwargs)
+    after = time.time()
+
+    return (after - before, result)
+
     #return (k * stirling(n - 1, k)) + stirling(n, k - 1)
 
 def main():
     players = []
-    for i in range(int(sys.argv[1])):
-        players.append(Player(i))
+    #for i in range(int(sys.argv[1])):
+    #    players.append(Player(i))
+    players = [i for i in range(int(sys.argv[1]))]
 
 
     num_players = len(players)
     num_chips = 3 * num_players
 
-    permuts = permute_chips(players, num_chips)
+    
+    (orig_time, permuts) = time_fn(permute_chips, players, num_chips)
+    #(numpy_time, numpy_permuts) = time_fn(permute_chips_numpy, numpy.array(players), num_chips)
     states = create_states(players)
 
     #print(permuts)
     #print("States: ", states)
     print("Num states: ", len(states))
     print("Computed permutes: ", len(permuts))
+    #print(permuts)
+    #print(numpy_permuts)
+    #print("Regular time: ", orig_time)
+    #print("Numpy time: ", numpy_time)
+    print("Calculated permutes: ", binom(num_chips + num_players - 1,
+        num_chips))
 
 if __name__ == "__main__":
     main()
