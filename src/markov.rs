@@ -16,21 +16,22 @@ pub const LEFT_PROB: f32 = 1.0/6.0;
 pub const RIGHT_PROB: f32 = 1.0/6.0;
 pub const CENTER_PROB: f32 = 1.0/6.0;
 
-fn new_markov(num_players: u8) -> Markov {
+pub fn new_markov(num_players: u8) -> Markov {
     let mut players = Vec::with_capacity(num_players as usize);
     for i in 0..num_players {
         players.push(i);
     }
 
     let states = create_states(&players);
+    println!("Creating chain of dimension {:?}", states.len());
 
     let mut markov: MatrixN<f32, Dynamic> = MatrixN::zeros_generic(Dynamic::new(states.len()), Dynamic::new(states.len()));
 
-    for (first_index, first_state) in states.iter().enumerate() {
+    /*for (first_index, first_state) in states.iter().enumerate() {
         for (second_index, second_state) in states.iter().enumerate() {
             markov[(first_index, second_index)] = transition_prob(first_state, second_state, num_players)
         }
-    }
+    }*/
     markov
 }
 

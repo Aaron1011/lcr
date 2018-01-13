@@ -15,6 +15,10 @@ fn main() {
         players.push(i);
     }
 
+
+    //let chain = markov::new_markov(num_players);
+    //println!("Markov chain: {:?}", chain);
+
     //let num_chips = num_players * 3;
     //let permuts = permute(&players, num_chips);
     let states = state::create_states(&players);
